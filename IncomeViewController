@@ -1,0 +1,83 @@
+/**
+ * Sample Skeleton for 'incomeView.fxml' Controller Class
+ */
+
+package income;
+
+import java.net.URL;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.time.LocalDate;
+import java.util.ResourceBundle;
+import javafx.event.ActionEvent;
+import income.DBConnection;
+import javafx.fxml.FXML;
+import javafx.scene.control.DatePicker;
+import javafx.scene.control.TextField;
+
+public class incomeViewController 
+{
+	Connection con;
+
+    @FXML // ResourceBundle that was given to the FXMLLoader
+    private ResourceBundle resources;
+
+    @FXML // URL location of the FXML file that was given to the FXMLLoader
+    private URL location;
+
+    @FXML // fx:id="dtpDOS"
+    private DatePicker dtpDOS; // Value injected by FXMLLoader
+
+    @FXML // fx:id="dtpDOE"
+    private DatePicker dtpDOE; // Value injected by FXMLLoader
+
+    @FXML // fx:id="txtAmount"
+    private TextField txtAmount; // Value injected by FXMLLoader
+
+    @FXML
+    void doTotal(ActionEvent event) 
+    {
+    	LocalDate ldos=dtpDOS.getValue();
+    	java.sql.Date swdos=java.sql.Date.valueOf(ldos);
+    	LocalDate ldoe=dtpDOE.getValue();
+    	java.sql.Date swdoe=java.sql.Date.valueOf(ldoe);
+    	try 
+    	{
+    		System.out.println("In try");
+    		float total;
+    		System.out.println("before pst");
+			PreparedStatement pst=(PreparedStatement)con.prepareStatement("select sum(Total) as tot from billtable where DOS>=? and DOE<=?");
+			System.out.println("after pst");
+			pst.setDate(1, swdos);
+			System.out.println("swdos");
+			pst.setDate(2,swdoe);
+			System.out.println("swdoe");
+			ResultSet table=pst.executeQuery();
+			System.out.println("table");
+			
+			while(table.next())
+			{
+			
+				total=table.getFloat("tot");
+				System.out.println("tot");
+				txtAmount.setText(total+"");
+				System.out.println("txtamount");
+			}
+		} 
+    	catch (SQLException e) 
+    	{
+    		System.out.println("in catch");
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	
+    }
+
+    @FXML // This method is called by the FXMLLoader when initialization is complete
+    void initialize() 
+    {
+        con=DBConnection.doConnect();
+    }
+}
