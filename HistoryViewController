@@ -1,0 +1,257 @@
+/**
+ * Sample Skeleton for 'historyView.fxml' Controller Class
+ */
+
+package history;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
+import java.net.URL;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.ResourceBundle;
+
+import com.mysql.jdbc.PreparedStatement;
+
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.RadioButton;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.stage.FileChooser;
+import history.DBConnection;
+import history.historyBean;
+
+public class historyViewController {
+	Connection con;
+	
+	@FXML // fx:id="radpaid"
+	private RadioButton radpaid; // Value injected by FXMLLoader
+
+	@FXML // fx:id="radun"
+	private RadioButton radun; // Value injected by FXMLLoader
+
+    @FXML // ResourceBundle that was given to the FXMLLoader
+    private ResourceBundle resources;
+
+    @FXML // URL location of the FXML file that was given to the FXMLLoader
+    private URL location;
+
+    @FXML // fx:id="comboName"
+    private ComboBox<String> comboName; // Value injected by FXMLLoader
+
+    @FXML // fx:id="status"
+    private ToggleGroup status; // Value injected by FXMLLoader
+
+    @FXML // fx:id="tblAll"
+    private TableView<historyBean> tblAll; // Value injected by FXMLLoader
+
+    @FXML
+    void doAll(ActionEvent event) 
+    {
+    	comboName.getSelectionModel().select(-1);
+    	radun.setSelected(false);
+    	radpaid.setSelected(false);
+    	try {
+			 PreparedStatement  pst=(PreparedStatement) con.prepareStatement("select * from billtable");
+			 
+			 getAllRecordsFromTable(pst);
+		} 
+		catch (SQLException e) 
+    	{
+			e.printStackTrace();
+		}
+		
+  	tblAll.setItems(list);//5
+    }
+
+    @FXML
+    void doHistory(ActionEvent event) 
+    {
+    	String name=comboName.getSelectionModel().getSelectedItem();
+    	radun.setSelected(false);
+    	radpaid.setSelected(false);
+    	try {
+			 PreparedStatement  pst=(PreparedStatement) con.prepareStatement("select * from billtable where CName=?");
+			 pst.setString(1, name);
+			 getAllRecordsFromTable(pst);
+		} 
+		catch (SQLException e) 
+    	{
+			e.printStackTrace();
+		}
+		
+  	tblAll.setItems(list);//5
+    }
+
+    @FXML
+    void doPaid(ActionEvent event) 
+    {
+    	comboName.getSelectionModel().select(-1);
+    	try {
+			 PreparedStatement  pst=(PreparedStatement) con.prepareStatement("select * from billtable where status=1");
+			 
+			 getAllRecordsFromTable(pst);
+		} 
+		catch (SQLException e) 
+    	{
+			e.printStackTrace();
+		}
+		
+  	tblAll.setItems(list);//5
+    }
+
+    @FXML
+    void doUnPaid(ActionEvent event) 
+    {
+    	comboName.getSelectionModel().select(-1);
+    	try {
+			 PreparedStatement  pst=(PreparedStatement) con.prepareStatement("select * from billtable where status=0");
+			 
+			 getAllRecordsFromTable(pst);
+		} 
+		catch (SQLException e) 
+    	{
+			e.printStackTrace();
+		}
+		
+  	tblAll.setItems(list);//5
+    }
+    
+    
+    @FXML
+    void doExport(ActionEvent event) throws IOException 
+    {
+    	Writer writer = null;
+        try {
+        	FileChooser chooser=new FileChooser();
+	    	
+        	chooser.setTitle("Select Path:");
+        	
+        	chooser.getExtensionFilters().addAll(
+                    new FileChooser.ExtensionFilter("All Files", "*.*")
+                    
+                );
+        	 File file=chooser.showSaveDialog(null);
+        	String filePath=file.getAbsolutePath();
+        	if(!(filePath.endsWith(".csv")||filePath.endsWith(".CSV")))
+        	{
+        		filePath=filePath+".csv";
+        	}
+        	 file = new File(filePath);
+        	 
+        	 
+        	 
+            writer = new BufferedWriter(new FileWriter(file));
+            String text="Name,Date of Start,Date of End,Cow Milk Qty.,Buffalo milk Qty.,Total Bill\n";
+            writer.write(text);
+            for (historyBean p : list)
+            {
+				text = p.getName()+ "," + p.getDos()+ "," + p.getDoe()+ "," + p.getCqty()+ "," + p.getBqty()+ "," + p.getTotal()+"\n";
+                writer.write(text);
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        finally {
+           
+            writer.flush();
+             writer.close();
+        }
+    }
+    
+    void fillCombo()
+    {
+    	//comboDate.getItems().clear();
+    	ArrayList<String> namesArray=new ArrayList<>();
+    	try {
+			PreparedStatement pst=(PreparedStatement)con.prepareStatement("select distinct CName from billtable");
+			ResultSet table=pst.executeQuery();
+		
+		while(table.next())
+		{
+			String name=table.getString("CName");
+			namesArray.add(name);
+		}
+		} 
+    	catch (SQLException e) 
+    	{
+			e.printStackTrace();
+		}
+    	comboName.getItems().addAll(namesArray);
+    }  
+    
+    ResultSet table;
+    ObservableList<historyBean> list;
+    
+    void getAllRecordsFromTable(PreparedStatement pst)//2
+    {
+    	list=FXCollections.observableArrayList();
+    	try {
+			
+    		 table=	pst.executeQuery();
+		while(table.next())
+		{
+			String name=table.getString("CName");
+			String dos=table.getString("DOS");
+			String doe=table.getString("DOE");
+			float cqty=table.getFloat("CQTotal");
+			float bqty=table.getFloat("BQTotal");
+			float total=table.getFloat("Total");
+		
+			historyBean obj=new historyBean(name,dos,doe,cqty,bqty,total);
+			list.addAll(obj);
+		}
+		} 
+    	catch (SQLException e) 
+    	{
+			e.printStackTrace();
+		}
+    }
+    
+    @SuppressWarnings("unchecked")
+	void addColumns()
+    {
+    	//4
+     	TableColumn<historyBean, String> Cname=new TableColumn<historyBean, String>("Name");//Dikhava Title
+     	Cname.setCellValueFactory(new PropertyValueFactory<>("name"));//bean field name not table col. name
+     	
+     	TableColumn<historyBean, String> dos=new TableColumn<historyBean, String>("Date of Start");//Dikhava Title
+     	dos.setCellValueFactory(new PropertyValueFactory<>("dos"));//bean field name not table col. name
+     	
+     	TableColumn<historyBean, String> doe=new TableColumn<historyBean, String>("Date of End");//Dikhava Title
+     	doe.setCellValueFactory(new PropertyValueFactory<>("doe"));//bean field name not table col. name
+     	
+     	TableColumn<historyBean, Float> cqty=new TableColumn<historyBean, Float>("Cow Milk Qty.");//Dikhava Title
+     	cqty.setCellValueFactory(new PropertyValueFactory<>("cqty"));//bean field name not table col. name
+     	
+     	
+     	TableColumn<historyBean, Float> bqty=new TableColumn<historyBean, Float>("Buffalo Milk Qty.");//Dikhava Title
+     	bqty.setCellValueFactory(new PropertyValueFactory<>("bqty"));//bean field name not table col. name
+     	
+     	TableColumn<historyBean, Float> total=new TableColumn<historyBean, Float>("Total Bill");//Dikhava Title
+     	total.setCellValueFactory(new PropertyValueFactory<>("total"));//bean field name not table col. name
+     	
+     	tblAll.getColumns().clear();
+     	tblAll.getColumns().addAll(Cname,dos,doe,cqty,bqty,total); 
+    }
+    
+
+    @FXML // This method is called by the FXMLLoader when initialization is complete
+    void initialize() 
+    {
+        con= DBConnection.doConnect();//1
+        fillCombo();
+        addColumns();
+    }
+}
