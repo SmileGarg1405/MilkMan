@@ -1,0 +1,237 @@
+/**
+ * Sample Skeleton for 'RoutineView.fxml' Controller Class
+ */
+
+package RoutineEntry;
+
+import java.net.URL;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.ResourceBundle;
+
+import com.mysql.jdbc.PreparedStatement;
+
+import RoutineEntry.DBConnection;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
+import javafx.scene.control.DatePicker;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
+import javafx.scene.control.RadioButton;
+import javafx.scene.control.SelectionMode;
+import javafx.scene.control.TextField;
+import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.input.MouseEvent;
+
+public class RoutineViewController {
+	
+	int count=0;
+	float cqty,bqty;
+	Connection con;
+	ArrayList<String> namesArray=new ArrayList<>();
+	
+	   @FXML // fx:id="lblorg"
+	    private Label lblorg; // Value injected by FXMLLoader
+	
+    @FXML // ResourceBundle that was given to the FXMLLoader
+    private ResourceBundle resources;
+
+    @FXML // URL location of the FXML file that was given to the FXMLLoader
+    private URL location;
+
+    @FXML // fx:id="lstcus"
+    private ListView<String> lstcus; // Value injected by FXMLLoader
+
+    @FXML // fx:id="txtbuf"
+    private TextField txtbuf; // Value injected by FXMLLoader
+
+    @FXML // fx:id="txtcow"
+    private TextField txtcow; // Value injected by FXMLLoader
+
+    @FXML // fx:id="lblcow"
+    private Label lblcow; // Value injected by FXMLLoader
+    
+    @FXML // fx:id="lblshow"
+    private Label lblshow; // Value injected by FXMLLoader
+
+
+    @FXML // fx:id="lblbuf"
+    private Label lblbuf; // Value injected by FXMLLoader
+
+    @FXML // fx:id="dtpdate"
+    private DatePicker dtpdate; // Value injected by FXMLLoader
+
+    @FXML // fx:id="radmore"
+    private RadioButton radmore; // Value injected by FXMLLoader
+
+    @FXML // fx:id="milk"
+    private ToggleGroup milk; // Value injected by FXMLLoader
+
+    @FXML // fx:id="radless"
+    private RadioButton radless; // Value injected by FXMLLoader
+
+    @FXML // fx:id="radno"
+    private RadioButton radno; // Value injected by FXMLLoader
+
+    @FXML
+    void dodelete(ActionEvent event) 
+    {
+    	lstcus.getItems().retainAll(lstcus.getSelectionModel().getSelectedItems());
+    }
+    
+    @FXML
+    void dodouble(MouseEvent event) 
+    {
+    	if(event.getClickCount()==2)
+    	{
+        	try 
+        	{
+        		String str= lstcus.getSelectionModel().getSelectedItem();
+    			PreparedStatement pst=(PreparedStatement) con.prepareStatement("select * from customerTable where CName=?");
+    			pst.setString(1, str);
+    			ResultSet table=pst.executeQuery();
+    		
+    			System.out.println("Outside the loop");
+	    		while(table.next())
+	    		{
+	    		//	lblorg.setVisible(true);
+	    			System.out.println("In loop");
+	    			cqty=table.getFloat("CQty");
+	    			bqty=table.getFloat("BQty");
+	    			lblcow.setText(cqty+"");
+	    			lblbuf.setText(bqty+"");
+	    			System.out.println("abc");
+	    		}
+        	}
+    		catch (SQLException e) 
+        	{
+    			e.printStackTrace();
+    		}
+
+    	}
+    }
+
+
+    @FXML
+    void doless(ActionEvent event) 
+    {
+    	count=1;
+    }
+
+    @FXML
+    void domore(ActionEvent event) 
+    {
+    	count=2;
+    }
+
+    @FXML
+    void dono(ActionEvent event) 
+    {
+    	count=3;
+    }
+
+    @FXML
+    void dosave(ActionEvent event) 
+    {
+    	if(count==0)
+    	{
+    		showMsg("Please select a radio button");
+    	}
+    	else
+    	{
+    		float cow,buf;
+    		try 
+    		{
+    			String name=lstcus.getSelectionModel().getSelectedItem();
+    			cow=Float.parseFloat(txtcow.getText());
+    			buf=Float.parseFloat(txtbuf.getText());
+    			
+    		LocalDate ldate=	dtpdate.getValue();
+    		java.sql.Date swdate= java.sql.Date.valueOf(ldate);
+    			//              									   tableName	
+    		PreparedStatement pst=	(PreparedStatement) con.prepareStatement("insert into VariationTable values(?,?,?,?)");
+    			
+    		
+    		if(count==1)
+    		{
+    			cow=cow*(-1);
+    			buf=buf*(-1);
+    		}
+    		else if(count==3)
+    		{
+    			txtcow.setDisable(true);
+    			txtbuf.setDisable(true);
+    			cow=cqty*(-1);
+    			buf=bqty*(-1);
+    		}
+    		pst.setString(1, name);
+    		pst.setDate(2, swdate);
+    		pst.setFloat(3,cow);
+    		pst.setFloat(4,buf);
+    		pst.executeUpdate();//fire query in table
+    		
+    		lblshow.setText("Saved");
+    		System.out.println("Saved");
+    		} catch (SQLException e) {
+    			// TODO Auto-generated catch block
+    			e.printStackTrace();
+    		}//in parameters
+    		
+    	}
+    }
+    
+    void fillList()
+    {
+
+    	
+    	try {
+			PreparedStatement pst=(PreparedStatement)con.prepareStatement("select distinct CName from customerTable");
+			ResultSet table=pst.executeQuery();
+		
+		while(table.next())
+		{
+			String name=table.getString("CName");
+			namesArray.add(name);
+		}
+		} 
+    	catch (SQLException e) 
+    	{
+			e.printStackTrace();
+		}
+    	lstcus.getItems().addAll(namesArray);
+    	lstcus.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+
+    }
+    
+    void showMsg(String msg)
+    {
+    	Alert al=new Alert(AlertType.ERROR);
+    	al.setTitle("Data Error");
+    	al.setContentText(msg);
+    	al.show();
+    }
+
+    @FXML // This method is called by the FXMLLoader when initialization is complete
+    void initialize() {
+        assert lstcus != null : "fx:id=\"lstcus\" was not injected: check your FXML file 'RoutineView.fxml'.";
+        assert txtbuf != null : "fx:id=\"txtbuf\" was not injected: check your FXML file 'RoutineView.fxml'.";
+        assert txtcow != null : "fx:id=\"txtcow\" was not injected: check your FXML file 'RoutineView.fxml'.";
+        assert lblcow != null : "fx:id=\"lblcow\" was not injected: check your FXML file 'RoutineView.fxml'.";
+        assert lblbuf != null : "fx:id=\"lblbuf\" was not injected: check your FXML file 'RoutineView.fxml'.";
+        assert dtpdate != null : "fx:id=\"dtpdate\" was not injected: check your FXML file 'RoutineView.fxml'.";
+        assert radmore != null : "fx:id=\"radmore\" was not injected: check your FXML file 'RoutineView.fxml'.";
+        assert milk != null : "fx:id=\"milk\" was not injected: check your FXML file 'RoutineView.fxml'.";
+        assert radless != null : "fx:id=\"radless\" was not injected: check your FXML file 'RoutineView.fxml'.";
+        assert radno != null : "fx:id=\"radno\" was not injected: check your FXML file 'RoutineView.fxml'.";
+        
+        //lblorg.setVisible(false);
+        con=DBConnection.doConnect();
+        fillList();
+        
+    }
+}
