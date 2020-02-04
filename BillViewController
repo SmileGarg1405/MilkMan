@@ -1,0 +1,370 @@
+/**
+ * Sample Skeleton for 'billView.fxml' Controller Class
+ */
+
+package billProtal;
+
+import java.net.URL;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Optional;
+import java.util.ResourceBundle;
+
+import com.mysql.jdbc.PreparedStatement;
+import billProtal.DBConnection;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.DatePicker;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
+import javafx.scene.control.SelectionMode;
+import javafx.scene.control.TextField;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.input.MouseEvent;
+
+public class billViewController {
+	
+	Connection con;
+	
+	@FXML // fx:id="txtStatus"
+	private TextField txtStatus; // Value injected by FXMLLoader
+
+
+    @FXML // ResourceBundle that was given to the FXMLLoader
+    private ResourceBundle resources;
+
+    @FXML // URL location of the FXML file that was given to the FXMLLoader
+    private URL location;
+    
+    @FXML // fx:id="lblsave"
+    private Label lblsave; // Value injected by FXMLLoader
+
+
+    @FXML // fx:id="lstcus"
+    private ListView<String> lstcus; // Value injected by FXMLLoader
+
+    @FXML // fx:id="dtpDOS"
+    private DatePicker dtpDOS; // Value injected by FXMLLoader
+
+    @FXML // fx:id="dtpDOE"
+    private DatePicker dtpDOE; // Value injected by FXMLLoader
+
+    @FXML // fx:id="lblDays"
+    private Label lblDays; // Value injected by FXMLLoader
+
+    @FXML // fx:id="txtMob"
+    private TextField txtMob; // Value injected by FXMLLoader
+
+    @FXML // fx:id="txtCQ"
+    private TextField txtCQ; // Value injected by FXMLLoader
+
+    @FXML // fx:id="txtBP"
+    private TextField txtBP; // Value injected by FXMLLoader
+
+    @FXML // fx:id="txtCP"
+    private TextField txtCP; // Value injected by FXMLLoader
+
+    @FXML // fx:id="txtBQ"
+    private TextField txtBQ; // Value injected by FXMLLoader
+
+    @FXML // fx:id="txtCQVar"
+    private TextField txtCQVar; // Value injected by FXMLLoader
+
+    @FXML // fx:id="txtBQVar"
+    private TextField txtBQVar; // Value injected by FXMLLoader
+
+    @FXML // fx:id="txtTot"
+    private TextField txtTot; // Value injected by FXMLLoader
+
+    long days;
+    float cqty,bqty;
+    float cqty1,bqty1,cprice,bprice;
+    float BCP,BBP,total;
+    
+    @FXML
+    void doBill(ActionEvent event) 
+    {
+    	BCP=cqty1*cprice*days+cqty*cprice;
+    	BBP=bqty1*bprice*days+bqty*bprice;
+    	
+    	total=BCP+BBP;
+    	txtTot.setText(total+"");
+    }
+
+    @FXML
+    void doNumber(ActionEvent event) 
+    {
+    	LocalDate lDOS=dtpDOS.getValue();
+		LocalDate lDOE=dtpDOE.getValue();
+    	days=ChronoUnit.DAYS.between(lDOS, lDOE);
+    	days+=1;
+		lblDays.setText(days+"");
+		
+    }
+    
+    
+    java.sql.Date dos,doe,swdos,swdoe;
+    
+
+    String name;
+    int indx;
+    
+    @FXML
+    void doSave(ActionEvent event) 
+    {
+    	
+    	name=lstcus.getSelectionModel().getSelectedItem();
+    	indx=lstcus.getSelectionModel().getSelectedIndex();
+    	
+    	LocalDate ldos=	dtpDOS.getValue();
+		swdos= java.sql.Date.valueOf(ldos);
+		
+		LocalDate ldoe=	dtpDOE.getValue();
+		swdoe= java.sql.Date.valueOf(ldoe);
+    	
+    	
+    	
+    	
+    	boolean jasus=false;
+    	try 
+    	{
+    		String str= lstcus.getSelectionModel().getSelectedItem();
+			PreparedStatement pst=(PreparedStatement) con.prepareStatement("select * from BillTable where CName=?");
+			pst.setString(1, str);
+			ResultSet table=pst.executeQuery();
+		
+			
+			while(table.next())
+			{
+				jasus=true;
+				dos=table.getDate("DOS");
+				doe=table.getDate("DOE");
+			}
+			
+			if(jasus==true)
+	    	{
+				if(dos.equals(swdos) && doe.equals(swdoe))
+				{
+					Alert alert = new Alert(AlertType.CONFIRMATION);
+					alert.setTitle("Confirmation Dialog");
+					alert.setHeaderText("This Bill Is Allready Generated!!!!\nDo You Want to Save Bill Again??");
+					
+					Optional<ButtonType> result = alert.showAndWait();
+					if (result.get() == ButtonType.OK)
+					{
+						System.out.println("ok button");
+						check();
+					}
+					else
+					{
+						System.out.println("confirmation");
+						dtpDOS.getEditor().setText("");
+						dtpDOE.getEditor().setText("");
+						lblDays.setText("");
+						txtCQ.setText("");
+						txtBP.setText("");
+						txtBQ.setText("");
+						txtBQVar.setText("");
+						txtCP.setText("");
+						txtCQVar.setText("");
+						txtMob.setText("");
+						txtTot.setText("");
+						txtStatus.setText("");
+						lstcus.getItems().remove(indx);
+					}
+				}
+				else
+				{
+					System.out.println("dos and doe");
+					check();
+				}
+	    	}
+			else
+			{
+				System.out.println("jasus==true");
+				check();
+			}
+    	}
+		catch (SQLException e) 
+    	{
+			e.printStackTrace();
+		}	
+		
+    }
+
+
+	void check()
+	{
+		
+
+    	float cqtot=cqty1*days+cqty;
+    	float bqtot=bqty1*days+bqty;
+    	
+    	
+		try {
+			PreparedStatement pst=	(PreparedStatement) con.prepareStatement("insert into BillTable values(?,?,?,?,?,?,?,?,?)");
+			System.out.println(name);
+			pst.setString(1, name);
+			System.out.println(swdos);
+			pst.setDate(2, swdos);
+			System.out.println(swdoe);
+			pst.setDate(3, swdoe);
+			System.out.println(cqtot);
+			pst.setFloat(4,cqtot);
+			System.out.println(bqtot);
+			pst.setFloat(5,bqtot);
+			System.out.println(BCP);
+			pst.setFloat(6,BCP);
+			System.out.println(BBP);
+			pst.setFloat(7,BBP);
+			System.out.println(total);
+			pst.setFloat(8,total);
+			System.out.println("status");
+			pst.setInt(9, Integer.parseInt(txtStatus.getText()));
+			pst.executeUpdate();
+			//*****************************************
+			String msg="Hi Java Programmer...";
+			String resp=SST_SMS.bceSunSoftSend("9041987962", msg);	
+		if(resp.contains("successfully"))
+				System.out.println("Sent...");
+		else
+			if(resp.contains("Unknown"))
+				System.out.println("Check Internet connection");
+			else
+				System.out.println("Invalid Mobile Number");
+		//***************************************************
+			lblsave.setText("Saved...");
+		} 
+		catch (SQLException e) 
+		{
+			e.printStackTrace();
+		}
+		dtpDOS.getEditor().setText("");
+		dtpDOE.getEditor().setText("");
+		lblDays.setText("");
+		txtCQ.setText("");
+		txtBP.setText("");
+		txtBQ.setText("");
+		txtBQVar.setText("");
+		txtCP.setText("");
+		txtCQVar.setText("");
+		txtMob.setText("");
+		txtTot.setText("");
+		txtStatus.setText("");
+		lstcus.getItems().remove(indx);
+}
+
+    @FXML
+    void doVar(ActionEvent event) 
+    {
+    	LocalDate lDOS=dtpDOS.getValue();
+		LocalDate lDOE=dtpDOE.getValue();
+		java.sql.Date swdos= java.sql.Date.valueOf(lDOS);
+		java.sql.Date swdoe= java.sql.Date.valueOf(lDOE);
+    	try 
+    	{
+    		String name=lstcus.getSelectionModel().getSelectedItem();
+			PreparedStatement pst=(PreparedStatement) con.prepareStatement("select sum(CQty) as SCQ,sum(BQty) as SBQ from variationtable where CName=? and DOS>=? and DOS<=?");
+			pst.setString(1, name);
+			pst.setDate(2, swdos);
+			pst.setDate(3, swdoe);
+			ResultSet table=pst.executeQuery();
+		
+			while(table.next())
+			{
+				
+				cqty=table.getFloat("SCQ");
+				bqty=table.getFloat("SBQ");
+				txtCQVar.setText(cqty+"");
+				txtBQVar.setText(bqty+"");
+			}
+		} 
+    	catch (SQLException e) 
+    	{
+			e.printStackTrace();
+		}
+    }
+    
+    
+    @FXML
+    void doDouble(MouseEvent event) 
+    {
+    	lblsave.setText("");
+    	String mob="";
+    	if(event.getClickCount()==2)
+    	{
+        	try 
+        	{
+        		String str= lstcus.getSelectionModel().getSelectedItem();
+    			PreparedStatement pst=(PreparedStatement) con.prepareStatement("select * from customerTable where CName=?");
+    			pst.setString(1, str);
+    			ResultSet table=pst.executeQuery();
+    		
+    			System.out.println("Outside the loop");
+	    		while(table.next())
+	    		{
+	    		//	lblorg.setVisible(true);
+	    			System.out.println("In loop");
+	    			cqty1=table.getFloat("CQty");
+	    			bqty1=table.getFloat("BQty");
+	    			cprice=table.getFloat("CPrice");
+	    			bprice=table.getFloat("BPrice");
+	    			mob=table.getString("Mobile");
+	    			txtBP.setText(bprice+"");
+	    			txtBQ.setText(bqty1+"");
+	    			txtCP.setText(cprice+"");
+	    			txtCQ.setText(cqty1+"");
+	    			txtMob.setText(mob);
+	    		}
+        	}
+    		catch (SQLException e) 
+        	{
+    			e.printStackTrace();
+    		}
+
+    	}
+    }
+
+    
+    
+    
+    void fillList()
+    {
+
+    	ArrayList<String> namesArray=new ArrayList<>();
+    	try {
+			PreparedStatement pst=(PreparedStatement)con.prepareStatement("select distinct CName from VariationTable");
+			ResultSet table=pst.executeQuery();
+		
+		while(table.next())
+		{
+			String name=table.getString("CName");
+			namesArray.add(name);
+		}
+		} 
+    	catch (SQLException e) 
+    	{
+			e.printStackTrace();
+		}
+    	lstcus.getItems().addAll(namesArray);
+    	lstcus.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+
+    }
+    
+   
+    
+
+    @FXML // This method is called by the FXMLLoader when initialization is complete
+    void initialize() {
+        
+        con=DBConnection.doConnect();
+        fillList();
+    }
+}
+
