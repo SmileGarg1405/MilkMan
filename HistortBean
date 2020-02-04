@@ -1,0 +1,60 @@
+package history;
+
+public class historyBean
+{
+	String name;
+	String dos;
+	String doe;
+	float cqty;
+	float bqty;
+	float total;
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
+	public String getDos() {
+		return dos;
+	}
+	public void setDos(String dos) {
+		this.dos = dos;
+	}
+	public String getDoe() {
+		return doe;
+	}
+	public void setDoe(String doe) {
+		this.doe = doe;
+	}
+	public float getCqty() {
+		return cqty;
+	}
+	public void setCqty(float cqty) {
+		this.cqty = cqty;
+	}
+	public float getBqty() {
+		return bqty;
+	}
+	public void setBqty(float bqty) {
+		this.bqty = bqty;
+	}
+	public float getTotal() {
+		return total;
+	}
+	public void setTotal(float total) {
+		this.total = total;
+	}
+	
+	public historyBean(){}
+	public historyBean(String name, String dos, String doe, float cqty, float bqty, float total) {
+		super();
+		this.name = name;
+		this.dos = dos;
+		this.doe = doe;
+		this.cqty = cqty;
+		this.bqty = bqty;
+		this.total = total;
+	}
+	
+	
+}
