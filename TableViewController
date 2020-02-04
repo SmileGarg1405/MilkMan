@@ -1,0 +1,273 @@
+/**
+ * Sample Skeleton for 'tableView.fxml' Controller Class
+ */
+
+package table;
+
+import java.awt.List;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
+import java.net.URL;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.ResourceBundle;
+
+import com.mysql.jdbc.PreparedStatement;
+
+import history.historyBean;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.RadioButton;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.stage.FileChooser;
+
+@SuppressWarnings("unused")
+public class tableViewController {
+	
+	Connection con;
+	
+	@FXML // fx:id="comboDate"
+	private ComboBox<String> comboDate; // Value injected by FXMLLoader
+
+
+    @FXML // ResourceBundle that was given to the FXMLLoader
+    private ResourceBundle resources;
+
+    @FXML // URL location of the FXML file that was given to the FXMLLoader
+    private URL location;
+
+    @FXML // fx:id="radCow"
+    private RadioButton radCow; // Value injected by FXMLLoader
+
+    @FXML // fx:id="type"
+    private ToggleGroup type; // Value injected by FXMLLoader
+
+    @FXML // fx:id="radBuf"
+    private RadioButton radBuf; // Value injected by FXMLLoader
+
+    @FXML // fx:id="tblShow"
+    private TableView<milkbean> tblShow; // Value injected by FXMLLoader
+
+    @FXML
+    void doBuf(ActionEvent event) 
+    {
+    	comboDate.getSelectionModel().select(-1);
+    	try {
+			 PreparedStatement  pst=(PreparedStatement) con.prepareStatement("select * from customertable where BQty!=0");
+			 
+			 getAllRecordsFromTable(pst);
+		} 
+		catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+  	tblShow.setItems(list);//5
+  	
+    }
+
+    @FXML
+    void doCow(ActionEvent event) 
+    {
+    	comboDate.getSelectionModel().select(-1);
+    	try
+    	{
+			 PreparedStatement  pst=(PreparedStatement) con.prepareStatement("select * from customertable where CQty!=0");
+			 
+			 getAllRecordsFromTable(pst);
+		} 
+		catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+   	tblShow.setItems(list);//5
+   	
+    }
+    
+    void fillCombo()
+    {
+    	//comboDate.getItems().clear();
+    	ArrayList<String> namesArray=new ArrayList<>();
+    	try {
+			PreparedStatement pst=(PreparedStatement)con.prepareStatement("select distinct DOS from customerTable");
+			ResultSet table=pst.executeQuery();
+		
+		while(table.next())
+		{
+			String date=table.getString("DOS");
+			namesArray.add(date);
+		}
+		} 
+    	catch (SQLException e) 
+    	{
+			e.printStackTrace();
+		}
+    	comboDate.getItems().addAll(namesArray);
+    }  
+
+    @FXML
+    void doFetch(ActionEvent event) 
+    {
+    	radBuf.setSelected(false);
+    	radCow.setSelected(false);
+    	String date=comboDate.getSelectionModel().getSelectedItem();
+    	try {
+			 PreparedStatement  pst=(PreparedStatement) con.prepareStatement("select * from customertable where DOS=?");
+			 pst.setString(1, date);
+			 
+			 getAllRecordsFromTable(pst);
+		} 
+		catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+   	tblShow.setItems(list);//5
+   	
+    }
+
+    @FXML
+    void doShow(ActionEvent event) 
+    {
+    	comboDate.getSelectionModel().select(-1);
+    	radBuf.setSelected(false);
+    	radCow.setSelected(false);
+    	try {
+			 PreparedStatement  pst=(PreparedStatement) con.prepareStatement("select * from customertable");
+			 
+			 getAllRecordsFromTable(pst);
+		} 
+		catch (SQLException e) 
+    	{
+			e.printStackTrace();
+		}
+		
+  	tblShow.setItems(list);//5
+  	
+    }
+    
+    ResultSet table;
+    ObservableList<milkbean> list;
+    
+    void getAllRecordsFromTable(PreparedStatement pst)//2
+    {
+    	list=FXCollections.observableArrayList();
+    	try {
+			
+    		 table=	pst.executeQuery();
+		while(table.next())
+		{
+			String name=table.getString("CName");
+			String mob=table.getString("Mobile");
+			String add=table.getString("Address");
+			float cqty=table.getFloat("CQty");
+			float cprice=table.getFloat("CPrice");
+			float bqty=table.getFloat("BQty");
+			float bprice=table.getFloat("BPrice");
+			String date=table.getString("DOS");
+		
+			milkbean obj=new milkbean(name,mob,add,cqty,cprice,bqty,bprice,date);
+			list.add(obj);
+			//System.out.println(name+"\t"+mob+"\t"+add+"\t"+cqty+"\t"+cprice+"\t"+bqty+"\t"+bprice+"\t"+date);
+			
+		}
+		} 
+    	catch (SQLException e) 
+    	{
+			e.printStackTrace();
+		}
+    }
+    
+    @FXML
+    void doExport(ActionEvent event) throws IOException 
+    {
+    	Writer writer = null;
+        try {
+        	FileChooser chooser=new FileChooser();
+	    	
+        	chooser.setTitle("Select Path:");
+        	
+        	chooser.getExtensionFilters().addAll(
+                    new FileChooser.ExtensionFilter("All Files", "*.*")
+                    
+                );
+        	 File file=chooser.showSaveDialog(null);
+        	String filePath=file.getAbsolutePath();
+        	if(!(filePath.endsWith(".csv")||filePath.endsWith(".CSV")))
+        	{
+        		filePath=filePath+".csv";
+        	}
+        	 file = new File(filePath);
+        	 
+     
+            writer = new BufferedWriter(new FileWriter(file));
+            String text="Name,Address,Cow Milk Qty.,Cow Milk Price,Buffalo Milk Qty.,Buffalo Milk Price,Date\n";
+            writer.write(text);
+            for (milkbean p : list)
+            {
+				text = p.getName()+ "," + p.getAddress()+ "," + p.getCqty()+ "," + p.getCprice()+ "," + p.getBqty()+ "," + p.getBprice()+ "," + p.getDate()+"\n";
+                writer.write(text);
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        finally {
+           
+            writer.flush();
+             writer.close();
+        }
+    }
+    
+    
+    @SuppressWarnings("unchecked")
+	void addColumns()
+    {
+    	//4
+     	TableColumn<milkbean, String> Cname=new TableColumn<milkbean, String>("Name");//Dikhava Title
+     	Cname.setCellValueFactory(new PropertyValueFactory<>("name"));//bean field name not table col. name
+     	
+     	TableColumn<milkbean, String> mob=new TableColumn<milkbean, String>("Contact Number");//Dikhava Title
+     	mob.setCellValueFactory(new PropertyValueFactory<>("mobile"));//bean field name not table col. name
+     	
+     	TableColumn<milkbean, String> add=new TableColumn<milkbean, String>("Address");//Dikhava Title
+     	add.setCellValueFactory(new PropertyValueFactory<>("address"));//bean field name not table col. name
+     	
+     	TableColumn<milkbean, Float> cqty=new TableColumn<milkbean, Float>("Cow Milk Qty.");//Dikhava Title
+     	cqty.setCellValueFactory(new PropertyValueFactory<>("cqty"));//bean field name not table col. name
+     	
+     	TableColumn<milkbean, Float> cprice=new TableColumn<milkbean, Float>("Cow Milk Price");//Dikhava Title
+     	cprice.setCellValueFactory(new PropertyValueFactory<>("cprice"));//bean field name not table col. name
+     	
+     	TableColumn<milkbean, Float> bqty=new TableColumn<milkbean, Float>("Buffalo Milk Qty.");//Dikhava Title
+     	bqty.setCellValueFactory(new PropertyValueFactory<>("bqty"));//bean field name not table col. name
+     	
+     	TableColumn<milkbean, Float> bprice=new TableColumn<milkbean, Float>("Buffalo Milk Price");//Dikhava Title
+     	bprice.setCellValueFactory(new PropertyValueFactory<>("bprice"));//bean field name not table col. name
+     	
+     	TableColumn<milkbean, String> date=new TableColumn<milkbean, String>("Date of Start");//Dikhava Title
+     	date.setCellValueFactory(new PropertyValueFactory<>("date"));//bean field name not table col. name
+     	
+     	tblShow.getColumns().clear();
+     	tblShow.getColumns().addAll(Cname,mob,add,cqty,cprice,bqty,bprice,date); 
+    }
+
+    @FXML // This method is called by the FXMLLoader when initialization is complete
+    void initialize() {
+        
+        con= DBConnection.doConnect();//1
+        fillCombo();
+        addColumns();
+    }
+}
