@@ -1,0 +1,173 @@
+/**
+ * Sample Skeleton for 'paymentView.fxml' Controller Class
+ */
+
+package paymentCollection;
+
+
+import java.net.URL;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.ResourceBundle;
+
+import com.mysql.jdbc.PreparedStatement;
+
+import paymentCollection.DBConnection;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.TextField;
+import javafx.scene.control.Alert.AlertType;
+
+
+public class paymentViewController {
+	Connection con;
+
+	  @FXML // fx:id="txtrec"
+	    private TextField txtrec; // Value injected by FXMLLoader
+	
+    @FXML // ResourceBundle that was given to the FXMLLoader
+    private ResourceBundle resources;
+
+    @FXML // URL location of the FXML file that was given to the FXMLLoader
+    private URL location;
+
+    @FXML // fx:id="comboName"
+    private ComboBox<String> comboName; // Value injected by FXMLLoader
+
+    @FXML // fx:id="txtCow"
+    private TextField txtCow; // Value injected by FXMLLoader
+
+    
+    @FXML // fx:id="txtBuf"
+    private TextField txtBuf; // Value injected by FXMLLoader
+
+    @FXML // fx:id="txtBill"
+    private TextField txtBill; // Value injected by FXMLLoader
+
+    @FXML // fx:id="txtTo"
+    private TextField txtTo; // Value injected by FXMLLoader
+
+    @FXML // fx:id="txtFrom"
+    private TextField txtFrom; // Value injected by FXMLLoader
+
+    String name;
+    @FXML
+    void doDetail(ActionEvent event) 
+    {
+    	if(jasus==0)
+		{
+			showMsg("All payment is collected");
+		}
+    	txtrec.setVisible(false);
+    	try {
+   		 	name=comboName.getSelectionModel().getSelectedItem();
+			PreparedStatement pst=(PreparedStatement) con.prepareStatement("select * from billtable where CName=?");
+			pst.setString(1, name);
+			ResultSet table=pst.executeQuery();
+		
+		
+		while(table.next())
+		{
+			
+			float cqty=table.getFloat("CQTotal");
+			float total=table.getFloat("Total");
+			float bqty=table.getFloat("BQTotal");
+			
+			java.sql.Date dos=table.getDate("DOS");
+			java.sql.Date doe=table.getDate("DOE");
+			
+			
+			
+			txtCow.setText(cqty+"");
+			txtBill.setText(total+"");
+			txtBuf.setText(bqty+"");
+			txtFrom.setText(dos.toString());
+			txtTo.setText(doe.toString());
+			
+		}
+   	}
+   	catch (SQLException e) 
+   	{
+			e.printStackTrace();
+		}
+   	
+		
+   	
+    }
+
+    @FXML
+    void doRecieve(ActionEvent event) 
+    {
+    	String name1=comboName.getSelectionModel().getSelectedItem();
+    	PreparedStatement pst;
+		try {
+			pst = (PreparedStatement) con.prepareStatement("update billtable set status=1 where CName=?");
+			pst.setString(1, name1);
+			pst.executeUpdate();
+			if(pst.executeUpdate()!=0)
+			{
+				txtrec.setVisible(true);
+				txtrec.setText("Recieved");
+				System.out.println("Recived");
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		txtBill.setText("");
+		txtBuf.setText("");
+		txtCow.setText("");
+		txtFrom.setText("");
+		txtTo.setText("");
+		fillCombo();
+    }
+    
+int jasus=0;
+    void fillCombo()
+    {
+    	comboName.getItems().clear();
+    	ArrayList<String> namesArray=new ArrayList<>();
+    	try {
+			PreparedStatement pst=(PreparedStatement)con.prepareStatement("select distinct CName from billtable where status=0");
+			ResultSet table=pst.executeQuery();
+		
+		while(table.next())
+		{
+			jasus=1;
+			String name=table.getString("CName");
+			namesArray.add(name);
+		}
+		
+		} 
+    	catch (SQLException e) 
+    	{
+			e.printStackTrace();
+		}
+    	comboName.getItems().addAll(namesArray);
+    } 
+    void showMsg(String msg)
+    {
+    	Alert al=new Alert(AlertType.INFORMATION);
+    	al.setTitle("Information");
+    	al.setContentText(msg);
+    	al.show();
+    }
+
+    @FXML // This method is called by the FXMLLoader when initialization is complete
+    void initialize() {
+        assert comboName != null : "fx:id=\"comboName\" was not injected: check your FXML file 'paymentView.fxml'.";
+        assert txtCow != null : "fx:id=\"txtCow\" was not injected: check your FXML file 'paymentView.fxml'.";
+        assert txtBuf != null : "fx:id=\"txtBuf\" was not injected: check your FXML file 'paymentView.fxml'.";
+        assert txtBill != null : "fx:id=\"txtBill\" was not injected: check your FXML file 'paymentView.fxml'.";
+        assert txtTo != null : "fx:id=\"txtTo\" was not injected: check your FXML file 'paymentView.fxml'.";
+        assert txtFrom != null : "fx:id=\"txtFrom\" was not injected: check your FXML file 'paymentView.fxml'.";
+
+        con=DBConnection.doConnect();
+        txtrec.setVisible(false);
+        fillCombo();
+    }
+}
