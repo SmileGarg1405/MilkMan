@@ -1,0 +1,28 @@
+package history;
+
+import java.sql.DriverManager;
+
+import com.mysql.jdbc.Connection;
+
+public class DBConnection 
+{
+	static java.sql.Connection doConnect()
+	{
+		java.sql.Connection con=null;//LRV
+		try 
+		{
+			Class.forName("com.mysql.jdbc.Driver");
+			con=(Connection)DriverManager.getConnection("jdbc:mysql://localhost/milkmandatabase","root","");
+			System.out.println("Connected");
+		} 
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+		return con;
+	}
+	public static void main(String[] args)
+	{
+		doConnect();
+	}
+}
