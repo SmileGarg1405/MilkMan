@@ -1,0 +1,337 @@
+/**
+ * Sample Skeleton for 'customerView.fxml' Controller Class
+ */
+
+package CustomerEntry;
+
+
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.ResourceBundle;
+
+import com.mysql.jdbc.PreparedStatement;
+
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.DatePicker;
+import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.stage.FileChooser;
+
+public class customerViewController {
+	
+	Connection con;
+	String pth;
+	@FXML // ResourceBundle that was given to the FXMLLoader
+    private ResourceBundle resources;
+
+    @FXML // URL location of the FXML file that was given to the FXMLLoader
+    private URL location;
+
+    @FXML // fx:id="txtAddress"
+    private TextField txtAddress; // Value injected by FXMLLoader
+
+
+    @FXML // fx:id="txtMobile"
+    private TextField txtMobile; // Value injected by FXMLLoader
+
+    @FXML // fx:id="comboName"
+    private ComboBox<String> comboName; // Value injected by FXMLLoader
+
+    @FXML // fx:id="txtPath"
+    private TextField txtPath; // Value injected by FXMLLoader
+
+    @FXML // fx:id="txtCQty"
+    private TextField txtCQty; // Value injected by FXMLLoader
+
+    @FXML // fx:id="txtBPrice"
+    private TextField txtBPrice; // Value injected by FXMLLoader
+
+    @FXML // fx:id="txtBQty"
+    private TextField txtBQty; // Value injected by FXMLLoader
+
+    @FXML // fx:id="txtCPrice"
+    private TextField txtCPrice; // Value injected by FXMLLoader
+
+    @FXML // fx:id="dtpDOS"
+    private DatePicker dtpDOS; // Value injected by FXMLLoader
+
+    @FXML // fx:id="txtResult"
+    private TextField txtResult; // Value injected by FXMLLoader
+
+    @FXML // fx:id="imgbro"
+    private ImageView imgbro; // Value injected by FXMLLoader
+
+    String imageFile;
+    String path;
+    @FXML
+    void doBrowse(ActionEvent event) 
+    {
+    	FileChooser filechooser=new FileChooser();
+    	filechooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Image Files","*.bmp","*.png","*.jpg","*.gif"));
+    	File selectedFile=filechooser.showOpenDialog(null);
+    	
+    	if(selectedFile!=null)
+    	{
+    		try
+    		{
+    			txtPath.setText(selectedFile.getPath());
+    			imageFile=selectedFile.toURI().toURL().toString();
+    			System.out.println(imageFile);
+    			Image image=new Image(imageFile);
+    			imgbro.setImage(image);
+    			path=selectedFile.getPath();
+    			System.out.println(path);
+    			
+    		}
+    		catch(Exception exp)
+    		{
+    			exp.printStackTrace();
+    		}
+    		
+    	}
+    }
+
+    @FXML
+    void doDelete(ActionEvent event) 
+    {
+    	txtResult.setVisible(false);
+    	try 
+		{
+			String name=comboName.getSelectionModel().getSelectedItem();
+			
+		PreparedStatement pst=	(PreparedStatement) con.prepareStatement("delete from customertable where Cname=?");
+		pst.setString(1, name);
+		int count=pst.executeUpdate();
+		
+		
+		comboName.getSelectionModel().select(-1);
+		txtResult.setVisible(false);
+    	txtMobile.setText("");
+		txtAddress.setText("");
+		txtCQty.setText("");
+		txtCPrice.setText("");
+		txtBQty.setText("");
+		txtBPrice.setText("");
+		dtpDOS.getEditor().setText("");
+		imgbro.setImage(null);
+		txtPath.setText("");
+		
+		
+		txtResult.setVisible(true);
+		txtResult.setText(count+"records deleted");
+		}
+    	catch(Exception exp){}
+    	fillCombo();
+    }
+
+    @FXML
+    void doFetch(ActionEvent event)
+    {
+    	txtResult.setVisible(false);
+    	//lblResult.setText("");
+    	//txtPer.clear();
+    	
+    	try {
+    		 String name=comboName.getSelectionModel().getSelectedItem();
+			PreparedStatement pst=(PreparedStatement) con.prepareStatement("select * from customertable where CName=?");
+			pst.setString(1, name);
+			ResultSet table=pst.executeQuery();
+		
+		boolean jasus=false;
+		while(table.next())
+		{
+			jasus=true;
+			String mobile=table.getString("Mobile");
+			String address=table.getString("Address");
+			float cqty=table.getFloat("CQty");
+			float cprice=table.getFloat("CPrice");
+			float bqty=table.getFloat("BQty");
+			float bprice=table.getFloat("BPrice");
+			java.sql.Date dos=table.getDate("DOS");
+			pth=table.getString("picPath");
+			txtMobile.setText(mobile);
+			txtAddress.setText(address);
+			txtCQty.setText(cqty+"");
+			txtCPrice.setText(cprice+"");
+			txtBQty.setText(bqty+"");
+			txtBPrice.setText(bprice+"");
+			txtPath.setText(pth);
+			dtpDOS.getEditor().setText(dos.toString());
+			
+		}
+		
+		
+		if(jasus==false)
+		{
+			txtResult.setVisible(true);
+			txtResult.setText("Invalid name");
+		} 
+    	}
+    	catch (SQLException e) 
+    	{
+			e.printStackTrace();
+		}
+    	
+		try 
+		{
+			imageFile=new File(pth).toURI().toURL().toString();
+			Image img=new Image(imageFile);
+			imgbro.setImage(img);
+		} 
+		catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	
+    	
+    }
+
+    @FXML
+    void doNew(ActionEvent event) 
+    {
+    	comboName.getEditor().setText("");
+    	txtResult.setVisible(false);
+    	txtMobile.setText("");
+		txtAddress.setText("");
+		txtCQty.setText("");
+		txtCPrice.setText("");
+		txtBQty.setText("");
+		txtBPrice.setText("");
+		dtpDOS.getEditor().setText("");
+		imgbro.setImage(null);
+		txtPath.setText("");
+    	
+    }
+
+    @FXML
+    void doSave(ActionEvent event) 
+    {
+    	
+    	txtResult.setVisible(false);
+    	try 
+		{
+			String name=comboName.getSelectionModel().getSelectedItem();
+			//dtpDob.getEditor().getText();//returns string
+			
+		LocalDate ldob=	dtpDOS.getValue();
+		java.sql.Date swdob= java.sql.Date.valueOf(ldob);
+			//              									   tableName	
+		PreparedStatement pst=	(PreparedStatement) con.prepareStatement("insert into customertable values(?,?,?,?,?,?,?,?,?)");
+		pst.setString(1, name);
+		pst.setString(2, txtMobile.getText());
+		pst.setString(3, txtAddress.getText());
+		pst.setFloat(4, Float.parseFloat(txtCQty.getText()));
+		pst.setFloat(5, Float.parseFloat(txtCPrice.getText()));
+		pst.setFloat(6, Float.parseFloat(txtBQty.getText()));
+		pst.setFloat(7, Float.parseFloat(txtBPrice.getText()));
+		pst.setDate(8, swdob);
+		pst.setString(9, path);
+		
+		pst.executeUpdate();//fire query in table
+		//lblResult.setText("Saved..");
+		txtResult.setVisible(true);
+		txtResult.setText("Saved...");
+		//System.out.println("saved...");
+		
+			
+		} catch (SQLException e) {
+			System.out.println("Exception");
+			e.printStackTrace();
+		}
+    	
+    	comboName.getSelectionModel().select(-1);
+    	txtMobile.setText("");
+		txtAddress.setText("");
+		txtCQty.setText("");
+		txtCPrice.setText("");
+		txtBQty.setText("");
+		txtBPrice.setText("");
+		dtpDOS.getEditor().setText("");
+		imgbro.setImage(null);
+		txtPath.setText("");
+		
+		fillCombo();
+		
+    }
+
+    @FXML
+    void doUpdate(ActionEvent event) 
+    {
+    	txtResult.setVisible(false);
+    	try 
+		{
+    		String name=comboName.getSelectionModel().getSelectedItem();
+			
+		java.sql.Date swdob=null;
+		String stwdob="";
+		
+		LocalDate lwdob=dtpDOS.getValue();
+		if(lwdob==null)
+			{
+				stwdob=dtpDOS.getEditor().getText();
+				lwdob=LocalDate.parse(stwdob);
+			}
+			swdob= java.sql.Date.valueOf(lwdob);
+		
+			//              									   tableName	
+		PreparedStatement pst=	(PreparedStatement) con.prepareStatement("update customertable set Mobile=?,Address=?,CQty=?,Cprice=?,BQty=?,BPrice=?,DOS=?,picPath=? where CName=?");
+		pst.setString(1, txtMobile.getText());
+		pst.setString(2, txtAddress.getText());
+		pst.setFloat(3, Float.parseFloat(txtCQty.getText()));
+		pst.setFloat(4, Float.parseFloat(txtCPrice.getText()));
+		pst.setFloat(5, Float.parseFloat(txtBQty.getText()));
+		pst.setFloat(6, Float.parseFloat(txtBPrice.getText()));
+		pst.setDate(7, swdob);
+		pst.setString(8,txtPath.getText());
+		pst.setString(9, name);
+		
+		
+		pst.executeUpdate();//fire query in table
+		txtResult.setVisible(true);
+		txtResult.setText("Updated");
+		
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}//in parameters
+		
+    }
+    
+    void fillCombo()
+    {
+    	comboName.getItems().clear();
+    	ArrayList<String> namesArray=new ArrayList<>();
+    	try {
+			PreparedStatement pst=(PreparedStatement)con.prepareStatement("select distinct CName from customertable");
+			ResultSet table=pst.executeQuery();
+		
+		while(table.next())
+		{
+			String name=table.getString("CName");
+			namesArray.add(name);
+		}
+		} 
+    	catch (SQLException e) 
+    	{
+			e.printStackTrace();
+		}
+    	comboName.getItems().addAll(namesArray);
+    }    	
+
+    @FXML // This method is called by the FXMLLoader when initialization is complete
+    void initialize() {
+        txtResult.setVisible(false);
+        con=DBConnection.doConnect();
+        fillCombo();
+    }
+}
