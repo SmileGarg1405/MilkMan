@@ -1,0 +1,236 @@
+/**
+ * Sample Skeleton for 'dashView.fxml' Controller Class
+ */
+
+package dashboard;
+
+import java.net.URL;
+import java.util.ResourceBundle;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.media.AudioClip;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
+import javafx.stage.Stage;
+
+public class dashViewController {
+
+    @FXML // ResourceBundle that was given to the FXMLLoader
+    private ResourceBundle resources;
+
+    @FXML // URL location of the FXML file that was given to the FXMLLoader
+    private URL location;
+
+    URL url;
+   	Media media;
+   	MediaPlayer mediaplayer;
+   	AudioClip audio;
+   	
+   	
+    void playSong()
+    {
+    	
+    	url=getClass().getResource("bg.mp3");
+		media=new Media(url.toString());
+		mediaplayer=new MediaPlayer(media);
+		mediaplayer.play();
+		
+    }
+    void playSound(){
+    	url=getClass().getResource("crash.wav");
+		audio=new AudioClip(url.toString());
+		audio.play();
+    }
+    
+    @FXML
+    void doAdd(MouseEvent event) 
+    {
+    	playSound();
+    	try{
+    		Parent root=FXMLLoader.load(getClass().getClassLoader().getResource("CustomerEntry/customerView.fxml")); 
+			Scene scene = new Scene(root);
+			Stage stage=new Stage();
+			stage.setScene(scene);
+			stage.show();
+			//to hide the opened window
+			/* 
+			   Scene scene1=(Scene)btnComboApp.getScene();
+			   scene1.getWindow().hide();
+			 */
+
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+    }
+
+    @FXML
+    void doBill(MouseEvent event) 
+    {
+    	playSound();
+    	try{
+    		Parent root=FXMLLoader.load(getClass().getClassLoader().getResource("billProtal/billView.fxml")); 
+			Scene scene = new Scene(root);
+			Stage stage=new Stage();
+			stage.setScene(scene);
+			stage.show();
+			//to hide the opened window
+			/* 
+			   Scene scene1=(Scene)btnComboApp.getScene();
+			   scene1.getWindow().hide();
+			 */
+
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+    }
+
+    @FXML
+    void doHistory(MouseEvent event) 
+    {
+    	playSound();
+    	try{
+    		Parent root=FXMLLoader.load(getClass().getClassLoader().getResource("history/historyView.fxml")); 
+			Scene scene = new Scene(root);
+			Stage stage=new Stage();
+			stage.setScene(scene);
+			stage.show();
+			//to hide the opened window
+			/* 
+			   Scene scene1=(Scene)btnComboApp.getScene();
+			   scene1.getWindow().hide();
+			 */
+
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+    }
+
+    @FXML
+    void doIncome(MouseEvent event) 
+    {
+    	playSound();
+    	try{
+    		Parent root=FXMLLoader.load(getClass().getClassLoader().getResource("income/incomeView.fxml")); 
+			Scene scene = new Scene(root);
+			Stage stage=new Stage();
+			stage.setScene(scene);
+			stage.show();
+			//to hide the opened window
+			/* 
+			   Scene scene1=(Scene)btnComboApp.getScene();
+			   scene1.getWindow().hide();
+			 */
+
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+    }
+
+    @FXML
+    void doPayment(MouseEvent event) 
+    {
+    	playSound();
+    	try{
+    		Parent root=FXMLLoader.load(getClass().getClassLoader().getResource("paymentCollection/paymentView.fxml")); 
+			Scene scene = new Scene(root);
+			Stage stage=new Stage();
+			stage.setScene(scene);
+			stage.show();
+			//to hide the opened window
+			/* 
+			   Scene scene1=(Scene)btnComboApp.getScene();
+			   scene1.getWindow().hide();
+			 */
+
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+    }
+
+    @FXML
+    void doRecordAdd(MouseEvent event) 
+    {
+    	playSound();
+    	try{
+    		Parent root=FXMLLoader.load(getClass().getClassLoader().getResource("table/tableView.fxml")); 
+			Scene scene = new Scene(root);
+			Stage stage=new Stage();
+			stage.setScene(scene);
+			stage.show();
+			//to hide the opened window
+			/* 
+			   Scene scene1=(Scene)btnComboApp.getScene();
+			   scene1.getWindow().hide();
+			 */
+
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+    }
+
+    @FXML
+    void doRecordVar(MouseEvent event)
+    {
+    	playSound();
+    	try{
+    		Parent root=FXMLLoader.load(getClass().getClassLoader().getResource("variationLog/variationView.fxml")); 
+			Scene scene = new Scene(root);
+			Stage stage=new Stage();
+			stage.setScene(scene);
+			stage.show();
+			//to hide the opened window
+			/* 
+			   Scene scene1=(Scene)btnComboApp.getScene();
+			   scene1.getWindow().hide();
+			 */
+
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+    }
+
+    @FXML
+    void doVar(MouseEvent event) 
+    {
+    	playSound();
+    	try{
+    		Parent root=FXMLLoader.load(getClass().getClassLoader().getResource("RoutineEntry/RoutineView.fxml")); 
+			Scene scene = new Scene(root);
+			Stage stage=new Stage();
+			stage.setScene(scene);
+			stage.show();
+			//to hide the opened window
+			/* 
+			   Scene scene1=(Scene)btnComboApp.getScene();
+			   scene1.getWindow().hide();
+			 */
+
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+    }
+
+    @FXML // This method is called by the FXMLLoader when initialization is complete
+    void initialize() {
+
+    }
+}
